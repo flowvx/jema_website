@@ -1,0 +1,245 @@
+@import url('https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,300;0,400;0,700;1,400&family=Inter:wght@400;500;600;700;800&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ============================================================
+   TOKENS DE THÈME — repris à l'identique de l'application Jema
+   (src/renderer/src/assets/main.css). Light / Dark / Editorial.
+   ============================================================ */
+:root {
+  --glass-bg: rgba(255, 255, 255, 0.77);
+  --glass-border: rgba(0, 0, 0, 0.07);
+  --glass-shadow: 0 4px 20px rgba(0, 0, 0, 0.126);
+
+  --app-bg-mid: #eef0f9;
+  --app-bg-edge: #dfe3f4;
+
+  --paper-color: #fdfbf7;
+  --scroller-bg: #e8eaf0;
+
+  --toolbar-bg: rgba(255, 255, 255, 0.98);
+  --toolbar-border: rgba(0, 0, 0, 0.07);
+  --tab-bar-bg: rgba(243, 244, 246, 0.95);
+  --tab-inactive-color: #6b7280;
+  --tab-active-color: #4f46e5;
+
+  --text-primary: #1f2937;
+  --text-secondary: #6b7280;
+  --text-muted: #9ca3af;
+
+  --accent-color: #4f46e5;
+  --accent-strong: #4338ca;
+  --accent-gradient: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+  --accent-glow: rgba(79, 70, 229, 0.35);
+
+  --danger-color: #e5484d;
+  --success-color: #10b981;
+
+  --card-bg: rgba(255, 255, 255, 0.9);
+  --badge-bg: #e5e7eb;
+  --badge-color: #374151;
+
+  --search-bg: rgba(255, 255, 255, 0.6);
+  --ai-bubble-bg: rgba(255, 255, 255, 0.92);
+  --glass-bg-lighter: rgba(255, 255, 255, 0.82);
+  --backdrop-blur: blur(14px);
+}
+
+.dark {
+  --glass-bg: rgba(14, 14, 22, 0.9);
+  --glass-border: rgba(255, 255, 255, 0.06);
+  --glass-shadow: 0 4px 24px rgba(0, 0, 0, 0.35);
+
+  --app-bg-mid: #0c0c18;
+  --app-bg-edge: #05050c;
+
+  --paper-color: #1c1c28;
+  --scroller-bg: #0a0a14;
+
+  --toolbar-bg: rgba(14, 14, 22, 0.98);
+  --toolbar-border: rgba(255, 255, 255, 0.06);
+  --tab-bar-bg: rgba(10, 10, 20, 0.96);
+  --tab-inactive-color: rgba(200, 200, 220, 0.45);
+  --tab-active-color: #7c70f5;
+
+  --text-primary: rgba(238, 238, 252, 0.92);
+  --text-secondary: rgba(200, 200, 220, 0.6);
+  --text-muted: rgba(200, 200, 220, 0.35);
+
+  --accent-color: #7c70f5;
+  --accent-strong: #5b50d6;
+  --accent-gradient: linear-gradient(135deg, #7c70f5 0%, #5b50d6 100%);
+  --accent-glow: rgba(124, 112, 245, 0.4);
+
+  --danger-color: #f2555a;
+  --success-color: #10b981;
+
+  --card-bg: rgba(30, 30, 46, 0.9);
+  --badge-bg: rgba(60, 60, 82, 0.8);
+  --badge-color: rgba(200, 200, 220, 0.8);
+
+  --search-bg: rgba(255, 255, 255, 0.05);
+  --ai-bubble-bg: rgba(14, 14, 22, 0.92);
+  --glass-bg-lighter: rgba(30, 30, 46, 0.78);
+}
+
+.editorial {
+  --glass-bg: rgba(254, 248, 234, 0.86);
+  --glass-border: rgba(139, 90, 43, 0.14);
+  --glass-shadow: 0 4px 20px rgba(90, 50, 20, 0.12);
+
+  --app-bg-mid: #ede0c8;
+  --app-bg-edge: #d4a96a;
+
+  --paper-color: #fefcf5;
+  --scroller-bg: #e8d9bf;
+
+  --toolbar-bg: rgba(254, 250, 240, 0.98);
+  --toolbar-border: rgba(139, 90, 43, 0.12);
+  --tab-bar-bg: rgba(240, 228, 206, 0.96);
+  --tab-inactive-color: #8b6b4a;
+  --tab-active-color: #7c3a1e;
+
+  --text-primary: #2c1a0e;
+  --text-secondary: #6b4c30;
+  --text-muted: #a08060;
+
+  --accent-color: #9b4a1e;
+  --accent-strong: #7c3a1e;
+  --accent-gradient: linear-gradient(135deg, #b5601e 0%, #9b4a1e 100%);
+  --accent-glow: rgba(155, 74, 30, 0.35);
+
+  --danger-color: #c0392b;
+  --success-color: #2e7d32;
+
+  --card-bg: rgba(254, 250, 240, 0.92);
+  --badge-bg: #e8d0b0;
+  --badge-color: #5c3a1e;
+
+  --search-bg: rgba(255, 248, 230, 0.7);
+  --ai-bubble-bg: rgba(254, 250, 240, 0.94);
+  --glass-bg-lighter: rgba(254, 250, 240, 0.86);
+}
+
+/* ============================================================
+   BASE
+   ============================================================ */
+* {
+  box-sizing: border-box;
+}
+html {
+  scroll-behavior: smooth;
+}
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+body {
+  margin: 0;
+  min-height: 100dvh;
+  font-family: 'Inter', system-ui, sans-serif;
+  color: var(--text-primary);
+  background:
+    radial-gradient(1200px 600px at 15% -10%, var(--accent-glow), transparent 60%),
+    linear-gradient(135deg, var(--app-bg-edge) 0%, var(--app-bg-mid) 22%, var(--app-bg-mid) 78%, var(--app-bg-edge) 100%);
+  background-attachment: fixed;
+  -webkit-font-smoothing: antialiased;
+  transition: background 0.5s ease, color 0.4s ease;
+}
+
+::selection {
+  background: var(--accent-glow);
+  color: var(--text-primary);
+}
+
+/* Verre dépoli — la signature visuelle de Jema */
+.glass {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+  backdrop-filter: var(--backdrop-blur);
+  -webkit-backdrop-filter: var(--backdrop-blur);
+}
+
+.accent-text {
+  background: var(--accent-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Scrollbar discrète */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--glass-border);
+  border-radius: 8px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}
+
+/* ============================================================
+   ÉDITEUR TIPTAP — surface papier + typo Merriweather
+   ============================================================ */
+.paper-surface .ProseMirror {
+  outline: none;
+  font-family: 'Merriweather', Georgia, serif;
+  font-size: 1.02rem;
+  line-height: 1.85;
+  color: var(--text-primary);
+  min-height: 320px;
+}
+.paper-surface .ProseMirror > * + * {
+  margin-top: 0.85em;
+}
+.paper-surface .ProseMirror h1 {
+  font-size: 1.9rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+.paper-surface .ProseMirror h2 {
+  font-size: 1.45rem;
+  font-weight: 700;
+}
+.paper-surface .ProseMirror blockquote {
+  border-left: 3px solid var(--accent-color);
+  padding-left: 1rem;
+  font-style: italic;
+  color: var(--text-secondary);
+}
+.paper-surface .ProseMirror ul,
+.paper-surface .ProseMirror ol {
+  padding-left: 1.4rem;
+}
+.paper-surface .ProseMirror ul {
+  list-style: disc;
+}
+.paper-surface .ProseMirror ol {
+  list-style: decimal;
+}
+.paper-surface .ProseMirror p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  float: left;
+  color: var(--text-muted);
+  pointer-events: none;
+  height: 0;
+}
+/* Surlignage IA simulé */
+.paper-surface .ProseMirror mark {
+  background: var(--accent-glow);
+  border-radius: 3px;
+  padding: 0 2px;
+}
