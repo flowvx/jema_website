@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Mail, Send, MessageCircle } from 'lucide-react'
 import Reveal from './Reveal.jsx'
 
-const CONTACT_EMAIL = 'contact@jema.app'
+const CONTACT_EMAIL = 'editor.jema@gmail.com'
 
 export default function Contact() {
   const [subject, setSubject] = useState('')

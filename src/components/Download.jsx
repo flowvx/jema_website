@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { Download as DownloadIcon, Check } from 'lucide-react'
 import Reveal from './Reveal.jsx'
 
@@ -19,12 +20,44 @@ const Linux = (p) => (
 )
 
 const PLATFORMS = [
-  { os: 'Windows', Icon: Windows, meta: 'Windows 10/11 · .exe', note: 'Installeur < 300 Mo', primary: true },
-  { os: 'macOS', Icon: Apple, meta: 'Apple Silicon & Intel · .dmg', note: 'Universel' },
-  { os: 'Linux', Icon: Linux, meta: 'AppImage · .deb', note: 'x86_64' }
+  {
+    os: 'macOS',
+    Icon: Apple,
+    meta: 'Apple Silicon & Intel · .dmg',
+    note: 'Universel',
+    href: 'https://github.com/flowvx/jema-releases/releases/download/v1.0.0/jema-editor-1.0.0.dmg'
+  },
+  {
+    os: 'Windows',
+    Icon: Windows,
+    meta: 'Windows 10/11 · .exe',
+    note: 'Installeur < 300 Mo',
+    primary: true,
+    href: 'https://github.com/flowvx/jema-releases/releases/download/v1.0.0/jema-editor-1.0.0-setup.exe'
+  },
+  {
+    os: 'Linux',
+    Icon: Linux,
+    meta: 'AppImage · .deb',
+    note: 'x86_64',
+    linuxOptions: [
+      {
+        label: 'AppImage',
+        href: 'https://github.com/flowvx/jema-releases/releases/download/v1.0.0/jema-editor-1.0.0.AppImage',
+        description: 'Exécutable portable, aucun paquet à installer.'
+      },
+      {
+        label: 'DEB',
+        href: 'https://github.com/flowvx/jema-releases/releases/download/v1.0.0/jema-editor_1.0.0_amd64.deb',
+        description: 'Paquet Debian pour installation système sur Ubuntu/Mint.'
+      }
+    ]
+  }
 ]
 
 export default function Download() {
+  const [linuxVariant, setLinuxVariant] = useState('AppImage')
+
   return (
     <section id="download" className="px-4 py-16 sm:px-6 sm:py-24">
       <div className="mx-auto max-w-5xl">
@@ -54,18 +87,49 @@ export default function Download() {
                 <p className="mt-1 text-xs" style={{ color: 'var(--text-muted)' }}>
                   {p.meta}
                 </p>
-                <a
-                  href="#"
-                  onClick={(e) => e.preventDefault()}
-                  className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-transform hover:-translate-y-0.5"
-                  style={
-                    p.primary
-                      ? { background: 'var(--accent-gradient)', color: '#fff' }
-                      : { background: 'var(--search-bg)', color: 'var(--text-primary)', border: '1px solid var(--glass-border)' }
-                  }
-                >
-                  <DownloadIcon size={16} /> Télécharger
-                </a>
+                {p.linuxOptions ? (
+                  <>
+                    <div className="mt-4 flex w-full gap-2">
+                      {p.linuxOptions.map((option) => (
+                        <button
+                          key={option.label}
+                          type="button"
+                          onClick={() => setLinuxVariant(option.label)}
+                          className={`inline-flex flex-1 items-center justify-center rounded-xl border px-3 py-2 text-[13px] font-semibold transition ${
+                            linuxVariant === option.label
+                              ? 'border-transparent bg-[rgba(255,255,255,0.12)] text-white'
+                              : 'border-[rgba(255,255,255,0.18)] bg-transparent text-[var(--text-primary)]'
+                          }`}
+                          style={{ background: linuxVariant === option.label ? 'var(--accent-gradient)' : undefined }}
+                        >
+                          {option.label}
+                        </button>
+                      ))}
+                    </div>
+                    <p className="mt-3 text-xs" style={{ color: 'var(--text-secondary)' }}>
+                      {p.linuxOptions.find((option) => option.label === linuxVariant)?.description}
+                    </p>
+                    <a
+                      href={p.linuxOptions.find((option) => option.label === linuxVariant)?.href}
+                      className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-transform hover:-translate-y-0.5"
+                      style={{ background: 'var(--accent-gradient)', color: '#fff' }}
+                    >
+                      <DownloadIcon size={16} /> Télécharger {linuxVariant}
+                    </a>
+                  </>
+                ) : (
+                  <a
+                    href={p.href}
+                    className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-transform hover:-translate-y-0.5"
+                    style={
+                      p.primary
+                        ? { background: 'var(--accent-gradient)', color: '#fff' }
+                        : { background: 'var(--search-bg)', color: 'var(--text-primary)', border: '1px solid var(--glass-border)' }
+                    }
+                  >
+                    <DownloadIcon size={16} /> Télécharger
+                  </a>
+                )}
                 <span className="mt-3 inline-flex items-center gap-1 text-[11px]" style={{ color: 'var(--success-color)' }}>
                   <Check size={12} /> {p.note}
                 </span>
