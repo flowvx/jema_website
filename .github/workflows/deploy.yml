@@ -1,0 +1,45 @@
+name: Deploy React/Vite to GitHub Pages
+
+on:
+  push:
+    branches: ['main'] # Se déclenche à chaque push sur main
+
+# Permissions nécessaires pour publier sur GitHub Pages
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  build_and_deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout du code
+        uses: actions/checkout@v4
+
+      - name: Installation de Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22 # Même version que ton app Jema
+          cache: 'npm'
+
+      - name: Installation des dépendances
+        run: npm install
+
+      - name: Compilation de l'application React
+        run: npm run build
+
+      - name: Configuration de GitHub Pages
+        uses: actions/configure-pages@v4
+
+      - name: Upload du dossier dist
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: './dist' # C'est le dossier généré par Vite
+
+      - name: Déploiement sur GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
