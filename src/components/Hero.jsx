@@ -31,7 +31,7 @@ export default function Hero() {
           style={{ color: 'var(--text-primary)' }}
         >
           Racontez,
-          <br className="hidden sm:block" /> <span className="accent-text">on s'occupe du reste.</span>
+          <br className="hidden sm:block" /> <span className="accent-text">Jema s'occupe du reste.</span>
         </motion.h1>
 
         <motion.p
