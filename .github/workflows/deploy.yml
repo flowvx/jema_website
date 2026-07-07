@@ -23,7 +23,7 @@ jobs:
       - name: Installation de Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 22 # Même version que ton app Jema
+          node-version: 24  
           cache: 'npm'
 
       - name: Installation des dépendances
