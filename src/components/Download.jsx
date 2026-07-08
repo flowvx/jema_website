@@ -33,7 +33,8 @@ const PLATFORMS = [
     Icon: Apple,
     meta: 'Apple Silicon & Intel · .dmg',
     note: 'Universel',
-    hrefKey: 'mac'
+    hrefKey: 'mac',
+    primary: false,
   },
   {
     os: 'Windows',
@@ -48,59 +49,66 @@ const PLATFORMS = [
     Icon: Linux,
     meta: 'AppImage · .deb',
     note: 'x86_64',
+    primary: false,
     linuxOptions: [
-      {
-        label: 'AppImage',
-        hrefKey: 'appimage',
-        description: 'Exécutable portable, aucun paquet à installer.'
-      },
       {
         label: 'DEB',
         hrefKey: 'deb',
         description: 'Paquet Debian pour installation système sur Ubuntu/Mint.'
+      },
+      {
+        label: 'AppImage',
+        hrefKey: 'appimage',
+        description: 'Exécutable portable, aucun paquet à installer.'
       }
-    ]
+    ],
   }
 ]
 
 export default function Download() {
-  const [linuxVariant, setLinuxVariant] = useState('AppImage')
+  const [linuxVariant, setLinuxVariant] = useState('DEB')
   const [downloadUrls, setDownloadUrls] = useState(DEFAULT_DOWNLOADS)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
-  useEffect(() => {
-    async function fetchLatestRelease() {
-      try {
-        setLoading(true)
-        setError(null)
-        const response = await fetch(`https://api.github.com/repos/${GITHUB_RELEASE_REPO}/releases/latest`)
-        if (!response.ok) {
-          throw new Error(`GitHub API responded with ${response.status}`)
-        }
+  // Fetch latest release and update URLs. Exposed for manual retry.
+  async function fetchLatestRelease() {
+    try {
+      setLoading(true)
+      setError(null)
 
-        const data = await response.json()
-        const assets = Array.isArray(data.assets) ? data.assets : []
-
-        const exeAsset = assets.find((asset) => asset.name.endsWith('.exe'))
-        const dmgAsset = assets.find((asset) => asset.name.endsWith('.dmg'))
-        const appImageAsset = assets.find((asset) => asset.name.endsWith('.AppImage'))
-        const debAsset = assets.find((asset) => asset.name.endsWith('.deb'))
-
-        setDownloadUrls({
-          windows: exeAsset?.browser_download_url ?? DEFAULT_DOWNLOADS.windows,
-          mac: dmgAsset?.browser_download_url ?? DEFAULT_DOWNLOADS.mac,
-          appimage: appImageAsset?.browser_download_url ?? DEFAULT_DOWNLOADS.appimage,
-          deb: debAsset?.browser_download_url ?? DEFAULT_DOWNLOADS.deb
-        })
-      } catch (error) {
-        setError('Les dernières versions GitHub sont momentanément indisponibles. Le téléchargement reste disponible avec la version stable.')
-        console.error('Impossible de récupérer les liens de la release GitHub', error)
-      } finally {
-        setLoading(false)
+      const response = await fetch(`https://api.github.com/repos/${GITHUB_RELEASE_REPO}/releases/latest`)
+      if (!response.ok) {
+        throw new Error(`GitHub API responded with ${response.status}`)
       }
-    }
 
+      const data = await response.json()
+      const assets = Array.isArray(data.assets) ? data.assets : []
+
+      // Debug: list asset names
+      console.debug('GitHub release:', data.tag_name ?? '(no tag)')
+      console.debug('Assets:', assets.map((a) => a.name))
+
+      const exeAsset = assets.find((asset) => (asset.name || '').toLowerCase().endsWith('.exe'))
+      const dmgAsset = assets.find((asset) => (asset.name || '').toLowerCase().endsWith('.dmg'))
+      const appImageAsset = assets.find((asset) => (asset.name || '').toLowerCase().endsWith('.appimage'))
+      const debAsset = assets.find((asset) => (asset.name || '').toLowerCase().endsWith('.deb'))
+
+      setDownloadUrls({
+        windows: exeAsset?.browser_download_url ?? DEFAULT_DOWNLOADS.windows,
+        mac: dmgAsset?.browser_download_url ?? DEFAULT_DOWNLOADS.mac,
+        appimage: appImageAsset?.browser_download_url ?? DEFAULT_DOWNLOADS.appimage,
+        deb: debAsset?.browser_download_url ?? DEFAULT_DOWNLOADS.deb
+      })
+    } catch (err) {
+      setError('Les dernières versions GitHub sont momentanément indisponibles. Le téléchargement reste disponible avec la version stable.')
+      console.error('Impossible de récupérer les liens de la release GitHub', err)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
     fetchLatestRelease()
   }, [])
 
@@ -122,7 +130,7 @@ export default function Download() {
             <Reveal key={p.os} delay={i * 0.08}>
               <div
                 className="glass flex h-full flex-col items-center rounded-2xl p-6 text-center transition-transform hover:-translate-y-1"
-                style={p.primary ? { boxShadow: 'var(--glass-shadow), 0 0 40px var(--accent-glow)' } : undefined}
+                style={p.primary === true ? { boxShadow: 'var(--glass-shadow), 0 0 40px var(--accent-glow)' } : undefined}
               >
                 <span style={{ color: 'var(--text-primary)' }}>
                   <p.Icon width={40} height={40} />
@@ -161,8 +169,13 @@ export default function Download() {
                           ? downloadUrls.deb
                           : downloadUrls.appimage
                       }
+                      target="_blank" rel="noopener noreferrer"
                       className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-transform hover:-translate-y-0.5"
-                      style={{ background: 'var(--accent-gradient)', color: '#fff' }}
+                      style={
+                        p.primary === true
+                          ? { background: 'var(--accent-gradient)', color: '#fff' }
+                          : { background: 'var(--search-bg)', color: 'var(--text-primary)', border: '1px solid var(--glass-border)' }
+                      }
                     >
                       <DownloadIcon size={16} /> Télécharger {linuxVariant}
                     </a>
@@ -170,9 +183,10 @@ export default function Download() {
                 ) : (
                   <a
                     href={downloadUrls[p.hrefKey]}
+                    target="_blank" rel="noopener noreferrer"
                     className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-transform hover:-translate-y-0.5"
                     style={
-                      p.primary
+                      p.primary === true
                         ? { background: 'var(--accent-gradient)', color: '#fff' }
                         : { background: 'var(--search-bg)', color: 'var(--text-primary)', border: '1px solid var(--glass-border)' }
                     }
@@ -193,9 +207,21 @@ export default function Download() {
             Chargement des téléchargements en cours…
           </p>
         ) : error ? (
-          <p className="mt-6 text-center text-sm font-medium" style={{ color: 'var(--danger-color)' }}>
-            {error}
-          </p>
+          <div className="mt-6 text-center">
+            <p className="mb-3 text-sm font-medium" style={{ color: 'var(--danger-color)' }}>
+              {error}
+            </p>
+            <div>
+              <button
+                type="button"
+                onClick={fetchLatestRelease}
+                className="inline-flex items-center gap-2 rounded-lg bg-[rgba(0,0,0,0.06)] px-4 py-2 text-sm font-medium"
+                style={{ border: '1px solid var(--glass-border)' }}
+              >
+                Réessayer
+              </button>
+            </div>
+          </div>
         ) : (
           <p className="mt-6 text-center text-xs" style={{ color: 'var(--text-muted)' }}>
             Gratuit. Vos manuscrits vous appartiennent — aucune donnée n'est envoyée sans votre accord.
