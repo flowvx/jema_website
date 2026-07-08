@@ -1,6 +1,14 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Download as DownloadIcon, Check } from 'lucide-react'
 import Reveal from './Reveal.jsx'
+
+const GITHUB_RELEASE_REPO = 'flowvx/jema-releases'
+const DEFAULT_DOWNLOADS = {
+  windows: 'https://github.com/flowvx/jema-releases/releases/download/v1.0.0/jema-editor-1.0.0-setup.exe',
+  mac: 'https://github.com/flowvx/jema-releases/releases/download/v1.0.0/jema-editor-1.0.0.dmg',
+  appimage: 'https://github.com/flowvx/jema-releases/releases/download/v1.0.0/jema-editor-1.0.0.AppImage',
+  deb: 'https://github.com/flowvx/jema-releases/releases/download/v1.0.0/jema-editor_1.0.0_amd64.deb'
+}
 
 // Icônes OS en SVG inline (marques → tracé neutre monochrome).
 const Windows = (p) => (
@@ -25,7 +33,7 @@ const PLATFORMS = [
     Icon: Apple,
     meta: 'Apple Silicon & Intel · .dmg',
     note: 'Universel',
-    href: 'https://github.com/flowvx/jema-releases/releases/download/v1.0.0/jema-editor-1.0.0.dmg'
+    hrefKey: 'mac'
   },
   {
     os: 'Windows',
@@ -33,7 +41,7 @@ const PLATFORMS = [
     meta: 'Windows 10/11 · .exe',
     note: 'Installeur < 300 Mo',
     primary: true,
-    href: 'https://github.com/flowvx/jema-releases/releases/download/v1.0.0/jema-editor-1.0.0-setup.exe'
+    hrefKey: 'windows'
   },
   {
     os: 'Linux',
@@ -43,12 +51,12 @@ const PLATFORMS = [
     linuxOptions: [
       {
         label: 'AppImage',
-        href: 'https://github.com/flowvx/jema-releases/releases/download/v1.0.0/jema-editor-1.0.0.AppImage',
+        hrefKey: 'appimage',
         description: 'Exécutable portable, aucun paquet à installer.'
       },
       {
         label: 'DEB',
-        href: 'https://github.com/flowvx/jema-releases/releases/download/v1.0.0/jema-editor_1.0.0_amd64.deb',
+        hrefKey: 'deb',
         description: 'Paquet Debian pour installation système sur Ubuntu/Mint.'
       }
     ]
@@ -57,6 +65,44 @@ const PLATFORMS = [
 
 export default function Download() {
   const [linuxVariant, setLinuxVariant] = useState('AppImage')
+  const [downloadUrls, setDownloadUrls] = useState(DEFAULT_DOWNLOADS)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+
+  useEffect(() => {
+    async function fetchLatestRelease() {
+      try {
+        setLoading(true)
+        setError(null)
+        const response = await fetch(`https://api.github.com/repos/${GITHUB_RELEASE_REPO}/releases/latest`)
+        if (!response.ok) {
+          throw new Error(`GitHub API responded with ${response.status}`)
+        }
+
+        const data = await response.json()
+        const assets = Array.isArray(data.assets) ? data.assets : []
+
+        const exeAsset = assets.find((asset) => asset.name.endsWith('.exe'))
+        const dmgAsset = assets.find((asset) => asset.name.endsWith('.dmg'))
+        const appImageAsset = assets.find((asset) => asset.name.endsWith('.AppImage'))
+        const debAsset = assets.find((asset) => asset.name.endsWith('.deb'))
+
+        setDownloadUrls({
+          windows: exeAsset?.browser_download_url ?? DEFAULT_DOWNLOADS.windows,
+          mac: dmgAsset?.browser_download_url ?? DEFAULT_DOWNLOADS.mac,
+          appimage: appImageAsset?.browser_download_url ?? DEFAULT_DOWNLOADS.appimage,
+          deb: debAsset?.browser_download_url ?? DEFAULT_DOWNLOADS.deb
+        })
+      } catch (error) {
+        setError('Les dernières versions GitHub sont momentanément indisponibles. Le téléchargement reste disponible avec la version stable.')
+        console.error('Impossible de récupérer les liens de la release GitHub', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchLatestRelease()
+  }, [])
 
   return (
     <section id="download" className="px-4 py-16 sm:px-6 sm:py-24">
@@ -110,7 +156,11 @@ export default function Download() {
                       {p.linuxOptions.find((option) => option.label === linuxVariant)?.description}
                     </p>
                     <a
-                      href={p.linuxOptions.find((option) => option.label === linuxVariant)?.href}
+                      href={
+                        linuxVariant === 'DEB'
+                          ? downloadUrls.deb
+                          : downloadUrls.appimage
+                      }
                       className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-transform hover:-translate-y-0.5"
                       style={{ background: 'var(--accent-gradient)', color: '#fff' }}
                     >
@@ -119,7 +169,7 @@ export default function Download() {
                   </>
                 ) : (
                   <a
-                    href={p.href}
+                    href={downloadUrls[p.hrefKey]}
                     className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-transform hover:-translate-y-0.5"
                     style={
                       p.primary
@@ -138,9 +188,19 @@ export default function Download() {
           ))}
         </div>
 
-        <p className="mt-6 text-center text-xs" style={{ color: 'var(--text-muted)' }}>
-          Gratuit. Vos manuscrits vous appartiennent — aucune donnée n'est envoyée sans votre accord.
-        </p>
+        {loading ? (
+          <p className="mt-6 text-center text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>
+            Chargement des téléchargements en cours…
+          </p>
+        ) : error ? (
+          <p className="mt-6 text-center text-sm font-medium" style={{ color: 'var(--danger-color)' }}>
+            {error}
+          </p>
+        ) : (
+          <p className="mt-6 text-center text-xs" style={{ color: 'var(--text-muted)' }}>
+            Gratuit. Vos manuscrits vous appartiennent — aucune donnée n'est envoyée sans votre accord.
+          </p>
+        )}
       </div>
     </section>
   )
